@@ -1,0 +1,9 @@
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+MODELS_DIR = BASE_DIR / "models"
+
+EMOTION_MODEL_DIR = MODELS_DIR / "emotion_classifier"
+
+LANGUAGE_MODEL_PATH = MODELS_DIR / "language_detector.pkl"

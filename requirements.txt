@@ -1,0 +1,14 @@
+numpy
+pandas
+tqdm
+matplotlib
+seaborn
+scikit-learn
+torch
+transformers
+datasets
+gensim
+langchain-core
+langchain-groq
+groq
+python-dotenv
