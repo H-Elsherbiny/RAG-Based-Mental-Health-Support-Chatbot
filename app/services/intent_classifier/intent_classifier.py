@@ -2,8 +2,7 @@ import os
 from groq import Groq
 from dotenv import load_dotenv
 from .prompts import FEW_SHOT_SYSTEM_PROMPT
-
-load_dotenv(override=True)
+from app.core.config import GROQ_API_KEY
 
 class IntentClassifier:
     def __init__(self, model_name: str = "openai/gpt-oss-20b", temperature: float = 0.0):
@@ -13,7 +12,7 @@ class IntentClassifier:
         self.system_prompt = FEW_SHOT_SYSTEM_PROMPT
         
         # Initialize Groq client
-        self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        self.client = Groq(api_key=GROQ_API_KEY)
 
     def classify_intent_few_shot(self, question: str) -> str:
         """Calls the LLM to classify the intent based on few-shot examples."""
