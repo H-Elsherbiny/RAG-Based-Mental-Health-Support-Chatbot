@@ -64,8 +64,7 @@ class EmotionClassifier:
             with open(vocab_path, "r") as f:
                 self.vocab_dict = json.load(f)
         else:
-            # Fallback if vocab is missing or not provided. 
-            self.vocab_dict = {'<pad>': 0, '<unk>': 1}
+            raise FileNotFoundError(f"Vocabulary file not found at {vocab_path}. Please provide a valid vocab.json.")
             
         vocab_size = len(self.vocab_dict)
         
@@ -91,6 +90,9 @@ class EmotionClassifier:
         # Load weights
         if os.path.exists(model_path):
             self.model.load_state_dict(torch.load(model_path, map_location=self.device))
+        else:
+            raise FileNotFoundError(f"Model .pth file not found at {model_path}. Please provide a valid trained model.")
+        
         self.model.eval()
 
     def tokenizer(self, text: str):
