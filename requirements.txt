@@ -14,3 +14,5 @@ langchain-core
 langchain-groq
 groq
 python-dotenv
+fasttext-wheel
+joblib
