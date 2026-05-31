@@ -1,5 +1,7 @@
 numpy
 pandas
+spacy
+click
 tqdm
 matplotlib
 seaborn
