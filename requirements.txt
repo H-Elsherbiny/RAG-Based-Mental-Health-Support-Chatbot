@@ -21,3 +21,5 @@ fastembed
 langchain-text-splitters
 onnxruntime-gpu
 sentence-transformers
+fastapi
+uvicorn
