@@ -16,3 +16,8 @@ groq
 python-dotenv
 fasttext-wheel
 joblib
+qdrant-client
+fastembed
+langchain-text-splitters
+onnxruntime-gpu
+sentence-transformers
