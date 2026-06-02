@@ -126,9 +126,9 @@ class ChatbotOrchestrator:
             # 6. RAG Pipeline
             search_output = self.rag_pipeline.two_stage_hybrid_search(
                 raw_user_query=english_message,
-                top_k_scenarios=3,
+                top_k_scenarios=5,
                 top_k_advice=5,
-                top_n_final=2
+                top_n_final=3
             )
             context = self.rag_pipeline.format_retrieved_context(search_output)
 
