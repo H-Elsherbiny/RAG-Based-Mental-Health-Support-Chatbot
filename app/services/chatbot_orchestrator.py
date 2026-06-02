@@ -2,6 +2,7 @@ from groq import Groq
 from app.core.config import GROQ_API_KEY
 from app.services.intent_classifier import IntentClassifier
 from app.services.emotion_classifier import EmotionClassifier
+from app.services.chat_history_store import ChatHistoryStore, InMemoryChatHistoryStore
 from app.services.language_detector import LanguageDetector
 from app.services.rag import RAGPipeline
 
@@ -11,7 +12,9 @@ class ChatbotOrchestrator:
         intent_classifier: IntentClassifier,
         emotion_classifier: EmotionClassifier,
         language_detector: LanguageDetector,
-        rag_pipeline: RAGPipeline
+        rag_pipeline: RAGPipeline,
+        history_store: ChatHistoryStore | None = None,
+        max_history_turns: int = 5
     ):
         """
         Initializes the orchestrator with all necessary NLP services via dependency injection.
@@ -21,6 +24,8 @@ class ChatbotOrchestrator:
         self.language_detector = language_detector
         self.rag_pipeline = rag_pipeline
         self.groq_client = Groq(api_key=GROQ_API_KEY)
+        self.history_store = history_store or InMemoryChatHistoryStore()
+        self.max_history_messages = max_history_turns * 2
 
     def _get_static_response(self, intent: str) -> str:
         """
@@ -53,7 +58,7 @@ class ChatbotOrchestrator:
         )
         return response.choices[0].message.content.strip()
 
-    def _generate_final_response(self, user_query: str, emotion: str, context: str, model_name: str = "openai/gpt-oss-20b") -> str:
+    def _generate_final_response(self, user_query: str, emotion: str, context: str, chat_history: list = None, model_name: str = "openai/gpt-oss-20b") -> str:
         system_prompt = (
             "You are an empathetic, professional mental health support chatbot. "
             "Use the provided historical counselor advice (Context) to synthesize a helpful, supportive response. "
@@ -63,21 +68,31 @@ class ChatbotOrchestrator:
         )
         user_prompt = f"User's Emotion: {emotion}\n\nContext:\n{context}\n\nUser Query: {user_query}"
         
+        messages = [{"role": "system", "content": system_prompt}]
+        
+        if chat_history:
+            # Append the last N messages to maintain context
+            for msg in chat_history:
+                # Expecting msg to be a dict like {"role": "user"|"assistant", "content": "..."}
+                messages.append(msg)
+                
+        messages.append({"role": "user", "content": user_prompt})
+        
         response = self.groq_client.chat.completions.create(
             model=model_name,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
+            messages=messages,
             temperature=0.3,
             max_tokens=256
         )
         return response.choices[0].message.content.strip()
 
-    def process_message(self, user_message: str) -> str:
+    def process_message(self, user_message: str, session_id: str = "default") -> str:
         """
         Main pipeline that processes the user query and routes it to the corresponding logic.
+        Maintains conversational context through an injected history store.
         """
+        chat_history = self.history_store.get_messages(session_id, limit=self.max_history_messages)
+
         # 1. Detect Language
         lang_result = self.language_detector.predict_language(user_message)
         language_code = lang_result['language_code']
@@ -112,12 +127,20 @@ class ChatbotOrchestrator:
             context = self.rag_pipeline.format_retrieved_context(search_output)
 
             # 7. Generate Response using LLM
-            english_response = self._generate_final_response(english_message, emotion, context)
+            english_response = self._generate_final_response(english_message, emotion, context, chat_history)
             
         else:
             english_response = self._get_static_response("out_of_scope")
 
-        # 8. Translate back if necessary
+        # 8. Update and Trim Chat History
+        self.history_store.append_turn(
+            session_id=session_id,
+            user_message=english_message,
+            assistant_message=english_response,
+            limit=self.max_history_messages,
+        )
+
+        # 9. Translate back if necessary
         if language_code not in ["en", "unknown"]:
             final_response = self._translate_from_english(english_response, language_name)
         else:
