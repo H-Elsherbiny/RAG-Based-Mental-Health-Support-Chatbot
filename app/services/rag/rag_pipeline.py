@@ -3,6 +3,7 @@ from sentence_transformers import CrossEncoder
 from qdrant_client import QdrantClient, models
 from qdrant_client.models import Filter, FieldCondition, MatchValue, MatchAny, RrfQuery, Prefetch
 from fastembed import TextEmbedding, SparseTextEmbedding
+from langfuse import observe
 
 from app.core.config import QDRANT_URL, QDRANT_API_KEY, COLLECTION_NAME, GROQ_API_KEY
 
@@ -39,7 +40,7 @@ class RAGPipeline:
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-        
+    @observe()
     def rewrite_user_query(self, raw_user_prompt: str) -> str:
         """
         Uses a fast Groq model to strip conversational noise and output
@@ -73,6 +74,7 @@ class RAGPipeline:
         optimized_query = response.choices[0].message.content.strip()
         return optimized_query
 
+    @observe()
     def _rerank_results(self, search_query: str, candidate_payloads: list) -> list:
         """
         Performs deep attention-based cross-encoding on candidate pairs
@@ -104,6 +106,7 @@ class RAGPipeline:
 
         return reranked_payloads
 
+    @observe()
     def two_stage_hybrid_search(self, raw_user_query: str,
                                 top_k_scenarios: int = 3,
                                 top_k_advice: int = 3,
