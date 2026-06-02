@@ -24,3 +24,4 @@ sentence-transformers
 fastapi
 uvicorn
 gradio
+langfuse
