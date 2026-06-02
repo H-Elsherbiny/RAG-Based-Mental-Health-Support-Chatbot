@@ -87,7 +87,7 @@ class ChatbotOrchestrator:
             model=model_name,
             messages=messages,
             temperature=0.3,
-            max_tokens=256
+            max_tokens=1024
         )
         return response.choices[0].message.content.strip()
 
