@@ -17,4 +17,4 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 # Qdrant Database Configuration
 QDRANT_URL = os.environ.get("QDRANT_URL")
 QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY")
-COLLECTION_NAME = "mental_health_hybrid"
+COLLECTION_NAME = "mental_health"
