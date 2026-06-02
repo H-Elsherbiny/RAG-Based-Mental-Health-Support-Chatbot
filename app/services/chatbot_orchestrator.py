@@ -1,4 +1,6 @@
 from groq import Groq
+from langfuse import observe
+
 from app.core.config import GROQ_API_KEY
 from app.services.intent_classifier import IntentClassifier
 from app.services.emotion_classifier import EmotionClassifier
@@ -40,6 +42,7 @@ class ChatbotOrchestrator:
         
         return responses.get(intent, "I don't understand.")
 
+    @observe(as_type="generation")
     def _translate_to_english(self, text: str, model_name: str = "openai/gpt-oss-20b") -> str:
         prompt = f"Translate the following text to English. Respond ONLY with the translation, nothing else.\n\nText: {text}"
         response = self.groq_client.chat.completions.create(
@@ -49,6 +52,7 @@ class ChatbotOrchestrator:
         )
         return response.choices[0].message.content.strip()
 
+    @observe(as_type="generation")
     def _translate_from_english(self, text: str, target_language: str, model_name: str = "openai/gpt-oss-20b") -> str:
         prompt = f"Translate the following text to {target_language}. Respond ONLY with the translation, nothing else. Do not add any conversational filler.\n\nText: {text}"
         response = self.groq_client.chat.completions.create(
@@ -58,6 +62,7 @@ class ChatbotOrchestrator:
         )
         return response.choices[0].message.content.strip()
 
+    @observe(as_type="generation")
     def _generate_final_response(self, user_query: str, emotion: str, context: str, chat_history: list = None, model_name: str = "openai/gpt-oss-20b") -> str:
         system_prompt = (
             "You are an empathetic, professional mental health support chatbot. "
@@ -86,6 +91,7 @@ class ChatbotOrchestrator:
         )
         return response.choices[0].message.content.strip()
 
+    @observe()
     def process_message(self, user_message: str, session_id: str = "default") -> str:
         """
         Main pipeline that processes the user query and routes it to the corresponding logic.
