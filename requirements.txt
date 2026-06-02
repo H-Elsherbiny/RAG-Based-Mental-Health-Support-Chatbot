@@ -19,7 +19,8 @@ joblib
 qdrant-client
 fastembed
 langchain-text-splitters
-onnxruntime-gpu
+onnxruntime
 sentence-transformers
 fastapi
 uvicorn
+gradio
