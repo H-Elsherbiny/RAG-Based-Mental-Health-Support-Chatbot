@@ -40,7 +40,7 @@ class RAGPipeline:
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-    @observe()
+    @observe(name="rewrite_user_query")
     def rewrite_user_query(self, raw_user_prompt: str) -> str:
         """
         Uses a fast Groq model to strip conversational noise and output
@@ -74,7 +74,7 @@ class RAGPipeline:
         optimized_query = response.choices[0].message.content.strip()
         return optimized_query
 
-    @observe()
+    @observe(name="rerank_results")
     def _rerank_results(self, search_query: str, candidate_payloads: list) -> list:
         """
         Performs deep attention-based cross-encoding on candidate pairs
@@ -106,7 +106,7 @@ class RAGPipeline:
 
         return reranked_payloads
 
-    @observe()
+    @observe(name="two_stage_hybrid_search")
     def two_stage_hybrid_search(self, raw_user_query: str,
                                 top_k_scenarios: int = 3,
                                 top_k_advice: int = 3,
