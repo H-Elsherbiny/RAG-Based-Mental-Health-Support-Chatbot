@@ -16,7 +16,7 @@ class RAGPipeline:
     def __init__(self,
                  model_name: str = "openai/gpt-oss-20b", 
                  temperature: float = 0.0, 
-                 max_tokens: int = 100):
+                 max_tokens: int = 512):
         
         # 1. Validate Configurations
         if not GROQ_API_KEY:
