@@ -49,16 +49,15 @@ class RAGPipeline:
         system_instruction = (
             "You are an advanced search query optimization engine for a mental health knowledge base. "
             "Your task is to transform raw, conversational user prompts into a detailed, descriptive, "
-            "and semantically rich search paragraph (approximately 2 to 3 sentences long).\n\n"
+            "and semantically rich clinical search paragraph (2 to 3 sentences long) to maximize vector database retrieval.\n\n"
             "Guidelines:\n"
             "1. Strip away all conversational fluff, greetings, casual sign-offs, and superficial narratives.\n"
-            "2. Synthesize and expand upon the core psychological distress markers, emotional states, "
-            "physical somatic symptoms, and situational triggers mentioned.\n"
-            "3. Write the output as a fully articulated, dense description of a clinical scenario. "
-            "Use clear, precise, and expressive terminology that mimics how a detailed patient case study "
-            "or thorough counseling log is written.\n"
-            "4. Output ONLY the optimized descriptive paragraph. Do not include introductory remarks, "
-            "explanations, headers, or quotes."
+            "2. Elevate the vocabulary: Translate casual expressions of distress into professional psychological themes "
+            "and clinical terminology (e.g., change 'afraid I did not study well' to 'perceived lack of academic preparation').\n"
+            "3. STICK TO THE FACTS: Do NOT assume or fabricate specific demographics (e.g., do not guess if they are an undergraduate vs. high school student). "
+            "Do NOT invent unmentioned physical or somatic symptoms (like insomnia, sweating, or palpitations) unless the user explicitly stated them.\n"
+            "4. Focus entirely on expanding the conceptual depth of the triggers, emotional states, and stressors actually provided by the user.\n"
+            "5. Output ONLY the optimized descriptive paragraph. Do not include introductory remarks, explanations, headers, or quotes."
         )
 
         try:
