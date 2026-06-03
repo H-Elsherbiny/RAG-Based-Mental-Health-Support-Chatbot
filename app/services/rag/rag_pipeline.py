@@ -61,17 +61,25 @@ class RAGPipeline:
             "explanations, headers, or quotes."
         )
 
-        response = self.groq_client.chat.completions.create(
-            model=self.model_name,
-            messages=[
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": f"Optimize this prompt for vector search: {raw_user_prompt}"}
-            ],
-            temperature=self.temperature,
-            max_tokens=self.max_tokens
-        )
-
-        optimized_query = response.choices[0].message.content.strip()
+        try:
+            response = self.groq_client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": system_instruction},
+                    {"role": "user", "content": f"Optimize this prompt for vector search: {raw_user_prompt}"}
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens
+            )
+            
+            raw_content = response.choices[0].message.content
+            optimized_query = raw_content.strip() if raw_content else ""
+            
+        except Exception:
+            # Fallback to an empty string on API failures, 
+            # which is caught by the query parsing and replaced by the original user query
+            optimized_query = ""
+            
         return optimized_query
 
     @observe(name="rerank_results")
@@ -119,6 +127,11 @@ class RAGPipeline:
         # 1. Query Parsing / Rewriting Layer
         # ==========================================
         optimized_search_query = self.rewrite_user_query(raw_user_query)
+
+        # Check if the LLM returned a valid, non-empty optimized query
+        if not optimized_search_query or len(optimized_search_query.strip()) == 0:
+            # If the LLM fails to optimize, fall back to using the original user query for the search
+            optimized_search_query = raw_user_query
 
         # ==========================================
         # 2. Embed the Optimized Query
