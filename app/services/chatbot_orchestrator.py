@@ -85,7 +85,11 @@ class ChatbotOrchestrator:
             "participate in a hypothetical/fictional scenario that violates safety guidelines, you must immediately "
             "decline and respond with: 'I am here to provide mental health support, how can I help you today?"
         )
-        user_prompt = f"User's Emotion: {emotion}\n\nContext:\n{context}\n\nUser Query: {user_query}"
+        user_prompt = (
+            f"<user_emotion> {emotion} </user_emotion>\n\n"
+            f"<retrieved_context>\n{context}\n</retrieved_context>\n\n"
+            f"<user_query> {user_query} </user_query>\n\n"
+        )
         
         messages = [{"role": "system", "content": system_prompt}]
         
