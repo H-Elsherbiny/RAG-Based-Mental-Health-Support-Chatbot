@@ -2,7 +2,7 @@
 
 An AI-driven mental health support chatbot that leverages Retrieval-Augmented Generation (RAG) to provide empathetic, contextually aware, and safe responses. By combining multiple NLP classification pipelines, two-stage hybrid search, and cross-encoder reranking, the system retrieves relevant historical counselor advice from a vector database and synthesizes actionable support using a Large Language Model, all while maintaining rigorous conversational safety.
 
-## 2. Technical Architecture & Tech Stack
+## 1. Technical Architecture & Tech Stack
 
 The system is built with a modular, microservice-inspired architecture, emphasizing distinct NLP tasks (language detection, intent classification, emotion recognition) before executing the RAG pipeline and final response generation.
 
@@ -30,7 +30,7 @@ The system is built with a modular, microservice-inspired architecture, emphasiz
 3. **Retrieval**: The `RAGPipeline` rewrites the user query for maximum vector retrieval, performs a Two-Stage Hybrid Search (Dense + Sparse) on Qdrant, and filters counselor advice based on similar patient scenarios. The results are reranked via a CrossEncoder.
 4. **Generation**: The LLM synthesizes a final empathetic response incorporating the retrieved advice, user emotion, and chat history. The response is translated back to the original language if necessary.
 
-## 3. Key Features
+## 2. Key Features
 
 - **Advanced Query Rewriting**: Utilizes a fast Groq model to strip conversational noise and output semantically dense search strings optimized for vector database lookups.
 - **Two-Stage Hybrid Search & Reranking**: Implements dense (`BAAI/bge-base-en-v1.5`) and sparse (`prithivida/Splade_PP_en_v1`) embeddings for comprehensive retrieval, followed by deep attention-based cross-encoder reranking to ensure absolute contextual relevance.
@@ -40,7 +40,7 @@ The system is built with a modular, microservice-inspired architecture, emphasiz
 - **Safety & Guardrails**: Hardcoded system prompts prevent the AI from diagnosing conditions, recommending medications, or breaking character, gracefully handling out-of-scope requests.
 - **Telemetry & Tracing**: fully integrated with Langfuse (`@observe` decorators) to monitor latency, track LLM costs, and debug pipeline steps in real-time.
 
-## 4. Prerequisites
+## 3. Prerequisites
 
 Before setting up the project, ensure you have the following installed and configured:
 
@@ -50,7 +50,7 @@ Before setting up the project, ensure you have the following installed and confi
   - [Qdrant Database](https://qdrant.tech/) URL and API Key for vector storage.
   - [Langfuse](https://langfuse.com/) Secret/Public keys for telemetry.
 
-## 5. Installation & Local Setup
+## 4. Installation & Local Setup
 
 Run the following commands in your terminal to set up the project locally:
 
@@ -84,7 +84,7 @@ Create a `.env` file in the root directory and populate it with your credentials
 | `LANGFUSE_PUBLIC_KEY` | Telemetry backend public key. | Langfuse Project Settings |
 | `LANGFUSE_BASE_URL` | Base URL for Langfuse instance. | Langfuse Project Settings |
 
-## 6. Usage & Running the Application
+## 5. Usage & Running the Application
 
 The project supports three modes of execution: a Gradio Web Interface, a FastAPI backend, and a Command-Line Interface (CLI).
 
@@ -112,7 +112,7 @@ python app/main.py
 python app/main.py --message "I have a panic attack because I have an important presentation tomorrow. I am afraid that I did not prepare well."
 ```
 
-## 7. Project Directory Structure
+## 6. Project Directory Structure
 
 ```text
 RAG-Based-Mental-Health-Support-Chatbot/
