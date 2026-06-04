@@ -25,3 +25,4 @@ fastapi
 uvicorn
 gradio
 langfuse
+tqdm-joblib
