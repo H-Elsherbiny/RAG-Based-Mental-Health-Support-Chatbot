@@ -2,7 +2,7 @@
 
 An AI-driven mental health support chatbot that leverages Retrieval-Augmented Generation (RAG) to provide empathetic, contextually aware, and safe responses. By combining multiple NLP classification pipelines, two-stage hybrid search, and cross-encoder reranking, the system retrieves relevant historical counselor advice from a vector database and synthesizes actionable support using a Large Language Model, all while maintaining rigorous conversational safety.
 
-## 🚀 [Live Demo]([/guides/content/editing-an-existing-page](https://huggingface.co/spaces/mohamednagy11/Mental-Health-Support-Chatbot))
+## 🚀 [Live Demo](https://huggingface.co/spaces/mohamednagy11/Mental-Health-Support-Chatbot)
 
 ## 1. Technical Architecture & Tech Stack
 
