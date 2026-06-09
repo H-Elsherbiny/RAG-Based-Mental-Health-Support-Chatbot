@@ -13,6 +13,7 @@ LANGUAGE_MODEL_DIR = MODELS_DIR / "language_detection_models/hierarchical_tradit
 
 # LLM Configuration
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 # Qdrant Database Configuration
 QDRANT_URL = os.environ.get("QDRANT_URL")
