@@ -6,7 +6,13 @@ from app.main import build_orchestrator
 # Initialize the orchestrator with memory store for HF Spaces compatibility (read-only filesystem)
 orchestrator = build_orchestrator(use_memory_store=True)
 
-with gr.Blocks(theme=gr.themes.Soft()) as demo:
+custom_css = """
+.gradio-container { max-width: 100% !important; padding: 1.5rem !important; }
+.clear-btn-container button { width: 100% !important; }
+footer { display: none !important; }
+"""
+
+with gr.Blocks(theme=gr.themes.Soft(primary_hue="indigo", secondary_hue="slate"), css=custom_css) as demo:
     gr.Markdown("# Mental Health Support Chatbot")
     gr.Markdown("A RAG-based Mental Health Support Chatbot to help you with your thoughts and feelings.")
     
@@ -17,11 +23,18 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     
     with gr.Row():
         with gr.Column(scale=8):
-            msg = gr.Textbox(placeholder="Type your message here...", show_label=False)
+            msg = gr.Textbox(placeholder="Type your message here...", show_label=False, container=False)
         with gr.Column(scale=4):
-            audio_in = gr.Audio(sources=["microphone", "upload"], type="filepath", show_label=False)
+            audio_in = gr.Audio(
+                sources=["microphone"], 
+                type="filepath", 
+                show_label=False, 
+                container=False,
+                interactive=True
+            )
             
-    clear = gr.ClearButton([msg, chatbot, audio_in])
+    with gr.Row(elem_classes="clear-btn-container"):
+        clear = gr.ClearButton([msg, chatbot, audio_in], variant="secondary", size="md")
 
     # --- Text Input Handlers ---
     def user_text_input(user_message, history):
@@ -64,11 +77,12 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
             session_id = str(uuid.uuid4())
             
         try:
-            bot_reply = orchestrator.process_message(audio_file_path=audio_path, session_id=session_id)
+            bot_reply, transcribed_text = orchestrator.process_message(audio_file_path=audio_path, session_id=session_id)
             # Update the last user message to show it was sent, then append bot response
-            history[-1]["content"] = "🎤 [Voice Message Sent]" 
+            history[-1]["content"] = f"🎤 {transcribed_text}"
             history.append({"role": "assistant", "content": bot_reply})
         except Exception as e:
+            history[-1]["content"] = "🎤 *[Voice note failed to transcribe]*"
             history.append({"role": "assistant", "content": f"⚠️ Audio Error: {str(e)}"})
             
         # Return None for the audio component to clear it after processing
@@ -89,17 +103,6 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
 
     # Audio Recording Chain (Triggers when recording stops)
     audio_in.stop_recording(
-        user_audio_input, 
-        inputs=[audio_in, chatbot], 
-        outputs=[audio_in, chatbot], 
-        queue=False
-    ).then(
-        bot_audio_response, 
-        inputs=[audio_in, chatbot, session_state], 
-        outputs=[audio_in, chatbot, session_state]
-    )
-
-    audio_in.upload(
         user_audio_input, 
         inputs=[audio_in, chatbot], 
         outputs=[audio_in, chatbot], 
