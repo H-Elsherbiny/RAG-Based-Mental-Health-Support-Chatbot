@@ -5,7 +5,7 @@ click
 tqdm
 matplotlib
 seaborn
-scikit-learn
+scikit-learn==1.6.1
 torch
 transformers
 datasets
@@ -14,3 +14,15 @@ langchain-core
 langchain-groq
 groq
 python-dotenv
+fasttext-wheel
+joblib
+qdrant-client
+fastembed
+langchain-text-splitters
+onnxruntime
+sentence-transformers
+fastapi
+uvicorn
+gradio
+langfuse
+tqdm-joblib
