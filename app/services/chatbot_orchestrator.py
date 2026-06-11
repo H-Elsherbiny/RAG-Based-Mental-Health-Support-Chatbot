@@ -1,11 +1,14 @@
 from groq import Groq
 from langfuse import observe
 
-from app.core.config import GROQ_API_KEY
+from typing import Optional, Dict, Any
+
+from app.core.config import GROQ_API_KEY, OPENAI_API_KEY
 from app.services.intent_classifier import IntentClassifier
 from app.services.emotion_classifier import EmotionClassifier
 from app.services.chat_history_store import ChatHistoryStore, InMemoryChatHistoryStore
 from app.services.language_detector import LanguageDetector
+from app.services.speech_to_text import SpeechToText
 from app.services.rag import RAGPipeline
 
 class ChatbotOrchestrator:
@@ -15,6 +18,7 @@ class ChatbotOrchestrator:
         emotion_classifier: EmotionClassifier,
         language_detector: LanguageDetector,
         rag_pipeline: RAGPipeline,
+        stt_service: Optional[SpeechToText] = None,
         history_store: ChatHistoryStore | None = None,
         max_history_turns: int = 5
     ):
@@ -25,6 +29,7 @@ class ChatbotOrchestrator:
         self.emotion_classifier = emotion_classifier
         self.language_detector = language_detector
         self.rag_pipeline = rag_pipeline
+        self.stt_service = stt_service or SpeechToText()
         self.groq_client = Groq(api_key=GROQ_API_KEY)
         self.history_store = history_store or InMemoryChatHistoryStore()
         self.max_history_messages = max_history_turns * 2
@@ -64,13 +69,7 @@ class ChatbotOrchestrator:
 
     @observe(name="generate_final_response", as_type="generation")
     def _generate_final_response(self, user_query: str, emotion: str, context: str, chat_history: list = None, model_name: str = "openai/gpt-oss-20b") -> str:
-        system_prompt = (
-            "You are an empathetic, professional mental health support chatbot. "
-            "Use the provided historical counselor advice (Context) to synthesize a helpful, supportive response. "
-            "Do NOT mention that you are referencing documents or 'context' to the user. "
-            "Acknowledge the user's emotion subtly if appropriate. "
-            "Keep the response concise and actionable."
-        )
+
         system_prompt = (
             "You are an empathetic, professional mental health support chatbot. "
             "Your goal is to provide supportive, actionable advice based primarily on the retrieved counselor knowledge. "
@@ -111,10 +110,14 @@ class ChatbotOrchestrator:
         return response.choices[0].message.content.strip()
 
     @observe(name="mental_health_chat")
-    def process_message(self, user_message: str, session_id: str = "default") -> str:
+    def process_message(self, 
+                        user_message: Optional[str] = None,
+                        audio_file_path: Optional[str] = None,
+                        session_id: str = "default") -> str:
         """
-        Main pipeline that processes the user query and routes it to the corresponding logic.
-        Maintains conversational context through an injected history store.
+        Main pipeline that processes the user query (either text or audio voice note) 
+        and routes it to the corresponding logic. Maintains conversational context 
+        through an injected history store.
         """
         chat_history = self.history_store.get_messages(session_id, limit=self.max_history_messages)
 
@@ -122,6 +125,21 @@ class ChatbotOrchestrator:
         lang_result = self.language_detector.predict_language(user_message)
         language_code = lang_result['language_code']
         language_name = lang_result.get('language_name', 'Unknown')
+
+        if audio_file_path:
+            # Route 1: Handle Audio Note via Whisper
+            print(f"[Orchestrator] Processing audio input from: {audio_file_path}")
+            stt_result = self.stt_service.transcribe_audio(audio_file_path)
+            
+            user_message = stt_result["text"]
+            language_code = stt_result["detected_language_code"].lower()
+            language_name = stt_result.get('detected_language_name', 'Unknown')
+            print(f"[Orchestrator] Whisper Transcribed: '{user_message}' | Detected Language: {language_name}")
+        else:
+            # Route 2: Handle Traditional Text Input
+            lang_result = self.language_detector.predict_language(user_message)
+            language_code = lang_result['language_code'].lower()
+            language_name = lang_result.get('language_name', 'Unknown')
 
         # 2. Translate to English if needed
         if language_code not in ["en", "unknown"]:

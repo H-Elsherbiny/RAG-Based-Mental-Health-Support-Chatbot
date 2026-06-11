@@ -26,3 +26,4 @@ uvicorn
 gradio
 langfuse
 tqdm-joblib
+openai
